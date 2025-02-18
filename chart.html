@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASRI ELECTRONICS & STATIONARY</title>
+    <link rel="icon" type = "favicon" href="casri logo.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #050311;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        header .logo {
+            width: 50px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #ff0000;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            background: #fffcfc7a;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin: 10px 0 5px;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background-color: #333;
+            color: white;
+        }
+
+        button {
+            padding: 12px;
+            background-color: #ff0000;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d40000;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        footer {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 20px;
+        }
+
+        footer a img {
+            width: 40px;
+            height: 40px;
+            transition: transform 0.3s;
+        }
+
+        footer a img:hover {
+            transform: scale(1.1);
+        }
+
+        .profit-display {
+            font-size: 1.2rem;
+            color: #fffffd;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="casri logo.png" alt="Casri Electronic Logo" class="logo">
+        <h1>Casri Electronic & Stationary</h1>
+    </header>
+
+    <div class="form-container">
+        <form id="form">
+            <label for="items">Meeqo alaab soo degtay:</label>
+            <input type="number" id="items" name="items" required>
+
+            <label for="date">Date:</label>
+            <input type="date" id="date" name="date" required>
+
+            <label for="price">Qiimaha ay ku timid:</label>
+            <input type="number" id="price" name="price" required>
+
+            <label for="profit">Meeqo faaido ah:</label>
+            <input type="number" id="profit" name="profit" required>
+
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <div class="profit-display" id="profitDisplay">Faaido: 0</div>
+
+    <footer>
+        <a href="https://wa.me/yourwhatsapp" target="_blank">
+            <img src="whatsapp (1).png" alt="Whatsapp">
+        </a>
+        <a href="https://www.facebook.com/CasriElectronics/?profile_tab_item_selected=about" target="_blank">
+            <img src="facebook.png" alt="Facebook">
+        </a>
+        <a href="casrielectronics3@gmail.com">
+            <img src="email.webp" alt="Gmail">
+        </a>
+    </footer>
+
+    <script>
+        const form = document.getElementById("form");
+        const ctx = document.getElementById('myChart').getContext('2d');
+
+        function createGradient(ctx) {
+            let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(255, 0, 0, 1)');
+            gradient.addColorStop(1, 'rgba(255, 165, 0, 0.6)');
+            return gradient;
+        }
+
+        // Check if there's saved data in localStorage
+        let chartData = {
+            labels: [],
+            datasets: [{
+                label: 'Faaido',
+                data: [],
+                backgroundColor: createGradient(ctx),
+                borderColor: '#ff0000',
+                borderWidth: 1
+            }]
+        };
+
+        // Load saved chart data from localStorage if available
+        const savedData = JSON.parse(localStorage.getItem('chartData'));
+        if (savedData) {
+            chartData.labels = savedData.labels;
+            chartData.datasets[0].data = savedData.data;
+        }
+
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                responsive: true,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutBounce'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Load saved chart data
+        window.onload = () => {
+            myChart.update();
+        };
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const date = document.getElementById("date").value;
+            const profit = document.getElementById("profit").value;
+
+            if (date && profit) {
+                chartData.labels.push(date);
+                chartData.datasets[0].data.push(profit);
+                chartData.datasets[0].backgroundColor = createGradient(ctx);
+                myChart.update();
+
+                // Update the displayed profit below the chart
+                document.getElementById('profitDisplay').textContent = `Faaido: ${profit}`;
+
+                // Save updated data to localStorage
+                localStorage.setItem('chartData', JSON.stringify({
+                    labels: chartData.labels,
+                    data: chartData.datasets[0].data
+                }));
+
+                form.reset();
+            }
+        });
+
+        // Clear localStorage when the window is closed or refreshed
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('chartData', JSON.stringify({
+                labels: chartData.labels,
+                data: chartData.datasets[0].data
+            }));
+        });
+    </script>
+</body>
+</html>
